@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <sstream>
 
+
 // Include GLEW
 #include <GL/glew.h>
 
@@ -129,6 +130,84 @@ GLuint LoadShaders(const char* vertex_file_path, const char* fragment_file_path)
 }
 
 
+// 2D Array for storing the coords of the squares for the maze
+
+int labyrinth[10][10] = {
+	{1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{0, 0, 1, 1, 1, 1, 0, 1, 0, 1},
+	{1, 0, 1, 0, 0, 0, 0, 1, 0, 1},
+	{1, 0, 1, 0, 1, 1, 0, 1, 0, 1},
+	{1, 0, 0, 0, 0, 1, 0, 0, 0, 1},
+	{1, 0, 1, 1, 0, 1, 1, 1, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 1, 0, 0},
+	{1, 0, 1, 0, 1, 1, 0, 0, 0, 1},
+	{1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
+};
+
+
+std::vector<float> vertices;
+
+
+void generateMazeVertices() {
+	int rows = 10;
+	int cols = 10; 
+
+	// Each square is of size 1x1, and we want to center the maze at (0, 0).
+
+	for (int i = 0; i < rows; ++i) {
+		for (int j = 0; j < cols; ++j) {
+
+			if (labyrinth[i][j] == 1) {
+
+				// Calculate the corners of the square
+
+				float topLeftX = j - cols / 2.0f;
+				float topLeftY = (rows / 2.0f) - i;
+
+				float topRightX = topLeftX + 1.0f;
+				float topRightY = topLeftY;
+
+				float bottomLeftX = topLeftX;
+				float bottomLeftY = topLeftY - 1.0f;
+
+				float bottomRightX = topRightX;
+				float bottomRightY = bottomLeftY;
+
+				// First triangle (top-left, bottom-left, top-right)
+
+				vertices.push_back(topLeftX);
+				vertices.push_back(topLeftY);
+				vertices.push_back(0.0f); // z = 0 
+
+				vertices.push_back(bottomLeftX);
+				vertices.push_back(bottomLeftY);
+				vertices.push_back(0.0f); // z = 0
+
+				vertices.push_back(topRightX);
+				vertices.push_back(topRightY);
+				vertices.push_back(0.0f); // z = 0
+
+				// Second triangle (bottom-left, bottom-right, top-right)
+
+				vertices.push_back(bottomLeftX);
+				vertices.push_back(bottomLeftY);
+				vertices.push_back(0.0f); // z = 0
+
+				vertices.push_back(bottomRightX);
+				vertices.push_back(bottomRightY);
+				vertices.push_back(0.0f); // z = 0
+
+				vertices.push_back(topRightX);
+				vertices.push_back(topRightY);
+				vertices.push_back(0.0f); // z = 0
+			}
+		}
+	}
+}
+
+
+
 int main(void)
 {
 	// Initialise GLFW
@@ -144,9 +223,6 @@ int main(void)
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); 
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-	// Open a window and create its OpenGL context
-	//window = glfwCreateWindow(950, 950, "Template", NULL, NULL);
 
 	// Open a window and create its OpenGL context
 	window = glfwCreateWindow(750, 750, "«Άσκηση 1Α - 2024", NULL, NULL);
@@ -172,8 +248,6 @@ int main(void)
 	// Ensure we can capture the escape key being pressed below
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
-	// Grey background
-	//glClearColor(0.5f, 0.5f, 0.5f, 0.0f);
 
 	// Black background
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -193,7 +267,8 @@ int main(void)
 	/**Το παρακάτω το αγνοείτε - είναι τοποθέτηση κάμερας ***/
 	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
 	
-	glm::mat4 Projection = glm::perspective(glm::radians(30.0f), 4.0f / 3.0f, 0.1f, 100.0f);
+	glm::mat4 Projection = glm::perspective(glm::radians(30.0f), 4.0f / 4.0f, 0.1f, 100.0f);
+	
 	// Camera matrix
 	glm::mat4 View = glm::lookAt(
 		glm::vec3(0, 0, 30), // Camera  in World Space
@@ -215,10 +290,19 @@ int main(void)
 		 0.0f,  0.0f, 0.0f	
 	};
 
+	// draw maze 
+	generateMazeVertices();
+
+	// for testing purposes only
+	//std::cout << "Total vertices: " << vertices.size() << std::endl;
+
 	GLuint vertexbuffer;
 	glGenBuffers(1, &vertexbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(shape_1_buffer), shape_1_buffer, GL_STATIC_DRAW);
+
+	// Use vertices data instead of shape_1_buffer
+	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
 
 	
 	do {
@@ -235,15 +319,18 @@ int main(void)
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 		glVertexAttribPointer(
 			0,                  // attribute 0, must match the layout in the shader.
-			2,                  // size
+			3,                  // size
 			GL_FLOAT,           // type
 			GL_FALSE,           // normalized?
 			0,                  // stride
 			(void*)0            // array buffer offset
 		);
 
-		// Draw the triangle !
-		glDrawArrays(GL_TRIANGLES, 0, 3); // 3 indices starting at 0 -> 1 triangle
+		
+
+		// Draw triangles
+		glDrawArrays(GL_TRIANGLES, 0, vertices.size() / 3);
+		 
 
 		glDisableVertexAttribArray(0);
 
