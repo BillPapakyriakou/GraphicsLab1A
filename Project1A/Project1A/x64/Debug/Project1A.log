@@ -1,3 +1,5 @@
 ﻿  Source-1A.cpp
-C:\Users\billp\OneDrive\Documents\GitHub\GraphicsLab1A\Project1A\Project1A\Source-1A.cpp(332,49): warning C4267: 'argument': conversion from 'size_t' to 'GLsizei', possible loss of data
+C:\Users\billp\OneDrive\Documents\GitHub\GraphicsLab1A\Project1A\Project1A\Source-1A.cpp(376,49): warning C4267: 'argument': conversion from 'size_t' to 'GLsizei', possible loss of data
+C:\Users\billp\OneDrive\Documents\GitHub\GraphicsLab1A\Project1A\Project1A\Source-1A.cpp(392,50): warning C4267: 'argument': conversion from 'size_t' to 'GLsizei', possible loss of data
+LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
   Project1A.vcxproj -> C:\Users\billp\OneDrive\Documents\GitHub\GraphicsLab1A\Project1A\x64\Debug\Project1A.exe

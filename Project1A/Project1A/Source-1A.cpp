@@ -130,6 +130,7 @@ GLuint LoadShaders(const char* vertex_file_path, const char* fragment_file_path)
 }
 
 
+
 // 2D Array for storing the coords of the squares for the maze
 
 int labyrinth[10][10] = {
@@ -146,12 +147,13 @@ int labyrinth[10][10] = {
 };
 
 
-std::vector<float> vertices;
+std::vector<float> vertices;   // for maze walls
+std::vector<float> verticesA;  // for character A (player)
 
 
 void generateMazeVertices() {
 	int rows = 10;
-	int cols = 10; 
+	int cols = 10;
 
 	// Each square is of size 1x1, and we want to center the maze at (0, 0).
 
@@ -205,7 +207,41 @@ void generateMazeVertices() {
 		}
 	}
 }
+	  
+void DrawPlayer() {
 
+	float C_x = -4.5f;
+	float C_y = 2.5f;
+
+	// First triangle (top-left, bottom-left, top-right)
+	
+	verticesA.push_back(C_x - 0.25f); 
+	verticesA.push_back(C_y + 0.25f); 
+	verticesA.push_back(0.0f);        // z = 0
+
+	verticesA.push_back(C_x - 0.25f); 
+	verticesA.push_back(C_y - 0.25f); 
+	verticesA.push_back(0.0f);        // z = 0
+
+	verticesA.push_back(C_x + 0.25f);
+	verticesA.push_back(C_y + 0.25f);
+	verticesA.push_back(0.0f);        // z = 0
+
+	// Second triangle (bottom-left, bottom-right, top-right)
+
+	verticesA.push_back(C_x - 0.25f); 
+	verticesA.push_back(C_y - 0.25f); 
+	verticesA.push_back(0.0f);        // z = 0
+
+	verticesA.push_back(C_x + 0.25f); 
+	verticesA.push_back(C_y - 0.25f); 
+	verticesA.push_back(0.0f);        // z = 0
+
+	verticesA.push_back(C_x + 0.25f); 
+	verticesA.push_back(C_y + 0.25f); 
+	verticesA.push_back(0.0f);        // z = 0
+	
+}
 
 
 int main(void)
@@ -236,6 +272,7 @@ int main(void)
 	}
 	glfwMakeContextCurrent(window);
 
+
 	// Initialize GLEW
 	glewExperimental = true; // Needed for core profile
 	if (glewInit() != GLEW_OK) {
@@ -244,6 +281,7 @@ int main(void)
 		glfwTerminate();
 		return -1;
 	}
+
 
 	// Ensure we can capture the escape key being pressed below
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
@@ -293,16 +331,24 @@ int main(void)
 	// draw maze 
 	generateMazeVertices();
 
+	// draw Player
+	DrawPlayer();
+
 	// for testing purposes only
 	//std::cout << "Total vertices: " << vertices.size() << std::endl;
 
-	GLuint vertexbuffer;
-	glGenBuffers(1, &vertexbuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(shape_1_buffer), shape_1_buffer, GL_STATIC_DRAW);
+	// Create buffers
+	GLuint vertexBufferMaze, vertexBufferPlayer;
 
-	// Use vertices data instead of shape_1_buffer
+	// Generate and bind buffer for the maze
+	glGenBuffers(1, &vertexBufferMaze);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferMaze);
 	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+
+	// Generate and bind buffer for the player
+	glGenBuffers(1, &vertexBufferPlayer);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferPlayer);
+	glBufferData(GL_ARRAY_BUFFER, verticesA.size() * sizeof(float), verticesA.data(), GL_STATIC_DRAW);
 
 	
 	do {
@@ -315,8 +361,9 @@ int main(void)
 
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);  /// Αυτό αφορά την κάμερα  - το αγνοείτε
 
+		// Draw maze walls
 		glEnableVertexAttribArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferMaze);
 		glVertexAttribPointer(
 			0,                  // attribute 0, must match the layout in the shader.
 			3,                  // size
@@ -326,24 +373,38 @@ int main(void)
 			(void*)0            // array buffer offset
 		);
 
-		
-
-		// Draw triangles
 		glDrawArrays(GL_TRIANGLES, 0, vertices.size() / 3);
-		 
-
 		glDisableVertexAttribArray(0);
 
+
+		// Draw player
+		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferPlayer);
+		glVertexAttribPointer(
+			0,                 // attribute 0, must match the layout in the shader.
+			3,				   // size
+			GL_FLOAT,          // type
+			GL_FALSE,          // normalized?
+			0,                 // stride
+			(void*)0           // array buffer offset
+		);
+
+		glDrawArrays(GL_TRIANGLES, 0, verticesA.size() / 3);
+		glDisableVertexAttribArray(0);
+
+			
 		// Swap buffers
 		glfwSwapBuffers(window);
 		glfwPollEvents();
+
 
 	} 
 	//while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS && glfwWindowShouldClose(window) == 0);
 	while (glfwGetKey(window, GLFW_KEY_Q) != GLFW_PRESS &&  glfwWindowShouldClose(window) == 0);
 
 	// Cleanup VBO
-	glDeleteBuffers(1, &vertexbuffer);
+	glDeleteBuffers(1, &vertexBufferMaze);
+	glDeleteBuffers(1, &vertexBufferPlayer);
 	glDeleteVertexArrays(1, &VertexArrayID);
 	glDeleteProgram(programID);
 
