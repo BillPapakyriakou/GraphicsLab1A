@@ -2,7 +2,7 @@
 //Αυτό το αρχείο θα το χρησιμοποιήσετε
 // για να υλοποιήσετε την άσκηση 1Α της OpenGL
 //
-//ΑΜ:   5186             Όνομα:  Βασιλείου Μιχάλης
+//ΑΜ:   5186             Όνομα:  Βασιλείου Νικόλαος Μιχαήλ
 //ΑΜ:   5324             Όνομα: Παπακυριακού Βασίλειος
 
 //*********************************
@@ -151,6 +151,13 @@ std::vector<float> vertices;   // for maze walls
 std::vector<float> verticesA;  // for character A (player)
 
 
+float C_x = -4.5f; // character x pos
+float C_y = 2.5f;  // character y pos
+
+GLuint vertexBufferPlayer;
+GLuint vertexBufferMaze;
+
+
 void generateMazeVertices() {
 	int rows = 10;
 	int cols = 10;
@@ -207,11 +214,11 @@ void generateMazeVertices() {
 		}
 	}
 }
+
 	  
 void DrawPlayer() {
 
-	float C_x = -4.5f;
-	float C_y = 2.5f;
+	verticesA.clear();
 
 	// First triangle (top-left, bottom-left, top-right)
 	
@@ -240,7 +247,53 @@ void DrawPlayer() {
 	verticesA.push_back(C_x + 0.25f); 
 	verticesA.push_back(C_y + 0.25f); 
 	verticesA.push_back(0.0f);        // z = 0
+
 	
+}
+
+// true if move is valid
+bool isValidMove(int newX, int newY) {
+	//return newX >= 0 && newX < 10 && newY >= 0 && newY < 10 && labyrinth[newX][newY] == 0;
+	return labyrinth[newX][newY] == 0;
+}
+
+// This function is called by GLFW whenever a key is pressed.
+void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+	if (action == GLFW_PRESS || action == GLFW_REPEAT) {
+		
+		int gridX = static_cast<int>(C_x + 4.5f); // Convert to grid position
+		int gridY = static_cast<int>(2.5f - C_y); // Convert to grid position
+		
+		int newX = gridX;
+		int newY = gridY;		
+
+		// Handle movement keys
+		switch (key) {
+		case GLFW_KEY_L: newX += 1; break; // right
+		case GLFW_KEY_J: newX -= 1; break; // left
+		case GLFW_KEY_K: newY += 1; break; // down
+		case GLFW_KEY_I: newY -= 1; break; // up
+		}
+
+		// Output the current and expected positions
+		std::cout << "Current Position: (" << C_x << ", " << C_y << ")" << std::endl;
+		std::cout << "Expected Position after move: (" << newX << ", " << newY << ")" << std::endl;
+
+		
+		// Check if the new move is valid before updating
+		if (isValidMove(newX, newY)) {
+			C_x = newX - 4.5f;
+			C_y = 2.5f - newY;
+			DrawPlayer(); 
+			std::cout << "valid move" << std::endl;
+			glBindBuffer(GL_ARRAY_BUFFER, vertexBufferPlayer);
+			glBufferData(GL_ARRAY_BUFFER, verticesA.size() * sizeof(float), verticesA.data(), GL_DYNAMIC_DRAW);
+		}
+
+		
+		
+	}
+
 }
 
 
@@ -282,6 +335,8 @@ int main(void)
 		return -1;
 	}
 
+	// Set key callback
+	glfwSetKeyCallback(window, keyCallback);
 
 	// Ensure we can capture the escape key being pressed below
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
@@ -332,13 +387,13 @@ int main(void)
 	generateMazeVertices();
 
 	// draw Player
-	DrawPlayer();
+    DrawPlayer();
 
 	// for testing purposes only
 	//std::cout << "Total vertices: " << vertices.size() << std::endl;
 
 	// Create buffers
-	GLuint vertexBufferMaze, vertexBufferPlayer;
+	//GLuint vertexBufferMaze, vertexBufferPlayer;
 
 	// Generate and bind buffer for the maze
 	glGenBuffers(1, &vertexBufferMaze);
@@ -351,10 +406,11 @@ int main(void)
 	glBufferData(GL_ARRAY_BUFFER, verticesA.size() * sizeof(float), verticesA.data(), GL_STATIC_DRAW);
 
 	
+	
 	do {
 
 		// Clear the screen
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Use our shader
 		glUseProgram(programID);
