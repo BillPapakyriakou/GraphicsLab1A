@@ -1,4 +1,4 @@
 ﻿  Source-1A.cpp
-C:\Users\billp\OneDrive\Documents\GitHub\GraphicsLab1A\Project1A\Project1A\Source-1A.cpp(432,49): warning C4267: 'argument': conversion from 'size_t' to 'GLsizei', possible loss of data
-C:\Users\billp\OneDrive\Documents\GitHub\GraphicsLab1A\Project1A\Project1A\Source-1A.cpp(448,50): warning C4267: 'argument': conversion from 'size_t' to 'GLsizei', possible loss of data
+C:\Users\billp\OneDrive\Documents\GitHub\GraphicsLab1A\Project1A\Project1A\Source-1A.cpp(446,49): warning C4267: 'argument': conversion from 'size_t' to 'GLsizei', possible loss of data
+C:\Users\billp\OneDrive\Documents\GitHub\GraphicsLab1A\Project1A\Project1A\Source-1A.cpp(462,50): warning C4267: 'argument': conversion from 'size_t' to 'GLsizei', possible loss of data
   Project1A.vcxproj -> C:\Users\billp\OneDrive\Documents\GitHub\GraphicsLab1A\Project1A\x64\Debug\Project1A.exe

@@ -154,9 +154,8 @@ std::vector<float> verticesA;  // for character A (player)
 float C_x = -4.5f; // character x pos
 float C_y = 2.5f;  // character y pos
 
-GLuint vertexBufferPlayer;
-GLuint vertexBufferMaze;
-
+GLuint vertexBufferPlayer;  // needed here instead of main because Player buffer
+GLuint vertexBufferMaze;    // is constantly being updated on keyCallback method
 
 void generateMazeVertices() {
 	int rows = 10;
@@ -253,8 +252,20 @@ void DrawPlayer() {
 
 // true if move is valid
 bool isValidMove(int newX, int newY) {
-	//return newX >= 0 && newX < 10 && newY >= 0 && newY < 10 && labyrinth[newX][newY] == 0;
-	return labyrinth[newX][newY] == 0;
+	
+
+	int checkX = newX;
+	int checkY = newY + 2; // because player starts at [0][2] 
+	
+
+	if (checkX < 0 || checkX >= 10 || checkY < 0 || checkY >= 10) {
+		//std::cout << "Out of bounds: (" << checkX << ", " << checkY << ")" << std::endl;
+		return false;
+	}
+	
+	//std::cout << "(" << checkX << ", " << checkY << ")" << std::endl;
+
+	return labyrinth[checkY][checkX] == 0;  //*** old: [checkX][checkY] wasnt working, now works idk how ***//
 }
 
 // This function is called by GLFW whenever a key is pressed.
@@ -276,16 +287,19 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		}
 
 		// Output the current and expected positions
-		std::cout << "Current Position: (" << C_x << ", " << C_y << ")" << std::endl;
-		std::cout << "Expected Position after move: (" << newX << ", " << newY << ")" << std::endl;
+		//std::cout << "Current Position: (" << C_x << ", " << C_y << ")" << std::endl;
+		//std::cout << "Expected Position after move: (" << newX << ", " << newY << ")" << std::endl;
 
 		
 		// Check if the new move is valid before updating
 		if (isValidMove(newX, newY)) {
 			C_x = newX - 4.5f;
 			C_y = 2.5f - newY;
-			DrawPlayer(); 
+
+			DrawPlayer();
+
 			std::cout << "valid move" << std::endl;
+
 			glBindBuffer(GL_ARRAY_BUFFER, vertexBufferPlayer);
 			glBufferData(GL_ARRAY_BUFFER, verticesA.size() * sizeof(float), verticesA.data(), GL_DYNAMIC_DRAW);
 		}
