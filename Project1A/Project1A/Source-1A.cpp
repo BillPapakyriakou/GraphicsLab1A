@@ -329,7 +329,7 @@ int main(void)
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Open a window and create its OpenGL context
-	window = glfwCreateWindow(750, 750, "«Άσκηση 1Α - 2024", NULL, NULL);
+	window = glfwCreateWindow(750, 750, u8"Άσκηση 1Α - 2024", NULL, NULL);
 
 
 	if (window == NULL) {
@@ -402,7 +402,7 @@ int main(void)
 	generateMazeVertices();
 
 	// draw Player
-    DrawPlayer();
+	DrawPlayer();
 
 	// for testing purposes only
 	//std::cout << "Total vertices: " << vertices.size() << std::endl;
